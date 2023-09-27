@@ -23,7 +23,10 @@ requires (F::Domain::type& x) {
 
 
 template <class F>
-concept Commutative = BinaryOperator<F> && F::is_commutative;
+concept Commutative = BinaryOperator<F> && 
+requires (F::Target::type& x, F::Target::type& y) {
+    F::is_commutative(x,y);
+};
 
 template <class F>
 concept ClosedBinaryOperator = BinaryOperator<F> &&
@@ -31,16 +34,19 @@ concept ClosedBinaryOperator = BinaryOperator<F> &&
         std::same_as<typename F::Domain::type::first_type, typename F::Target::type>;
 
 template <class F>
-concept Associative = ClosedBinaryOperator<F> && F::is_associative;
+concept Associative = ClosedBinaryOperator<F> && 
+requires (F::Target::type& x, F::Target::type& y, F::Target::type& z) {
+    F::is_associative(x,y,z);
+};
 
 template <class F>
 concept HasIdentityElement = ClosedBinaryOperator<F> && 
 requires (F::Target::type& x) {
-    x = F::identity();
+    F::has_identity(x);
 };
 
 template <class F>
 concept HasInverseElement = ClosedBinaryOperator<F> && 
 requires (F::Target::type& x) {
-    x = F::inverse(x);
+    F::has_inverse(x);
 };

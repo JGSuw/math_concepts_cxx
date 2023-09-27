@@ -10,7 +10,7 @@ concept Group = PointSet<Set> &&
         MapsTo<Op,typename Op::Domain, Set>;
 
 template <class Set, class Op>
-consteval bool is_group() {
+inline bool is_group() {
     return Group<Set,Op>;
 }
 
@@ -18,7 +18,7 @@ template <class Set, class Op>
 concept AbelianGroup = Group<Set, Op> && Commutative<Op>;
 
 template <class Set, class Op>
-consteval bool is_abelian_group() {
+inline bool is_abelian_group() {
     return AbelianGroup<Set,Op>;
 }
 
@@ -27,11 +27,26 @@ class RealAddition {
 public:
     using Domain = CartesianProduct<RealNumbers<T>,RealNumbers<T>>;
     using Target = RealNumbers<T>;
-    static consteval T identity() { return RealNumbers<T>::zero; }
-    static consteval T inverse(const T& x) { return -x; }
-    static consteval T apply(const Domain::type& x) { return x.first+x.second; }
-    static constexpr bool is_commutative = true;
-    static constexpr bool is_associative = true;
+
+    static inline T identity() { return RealNumbers<T>::zero; }
+    static consteval bool has_identity(const T& x) { 
+        return apply(identity(), x) == x;
+    }
+
+    static inline T inverse(const T& x) { return -x; }
+    static consteval bool has_inverse(const T& x) { 
+        return apply(inverse(x),x) == identity();
+    }
+
+    static inline T apply(const T& x, const T& y) { return x+y; }
+    static inline T apply(const Domain::type& x) { return x.first+x.second; }
+
+    static consteval bool is_commutative(const T& x, const T& y) {
+        return apply(x,y) == apply(y,x);
+    }
+    static constexpr bool is_associative(const T& x, const T& y, const T& z) {
+        return apply(x,apply(y,z)) == apply(apply(x,y),z);
+    }
 };
 
 template <typename T>
@@ -39,16 +54,35 @@ class RealMultiplication {
 public:
     using Domain = CartesianProduct<RealNumbers<T>,RealNumbers<T>>;
     using Target = RealNumbers<T>;
-    static consteval T identity() { return RealNumbers<T>::one; }
-    static consteval T inverse (const T& x) {
+
+    static inline T identity() { return RealNumbers<T>::one; }
+    static consteval bool has_identity(const T& x) { 
+        return apply(identity(), x) == x;
+    }
+
+    static inline T inverse (const T& x) {
         if (x == RealNumbers<T>::zero) {
             throw std::domain_error("Zero has no multiplicative inverse");
         }
         return identity/x;
     }
-    static consteval T apply(const Domain::type& x) { return x.first*x.second; }
-    static constexpr bool is_commutative = true;
-    static constexpr bool is_associative = true;
-    static constexpr bool distributes_through(RealAddition<T> addition) { return true; }
+    static consteval bool has_inverse(const T& x) { 
+        return apply(inverse(x),x) == identity();
+    }
+
+    static inline T apply(const T& x, const T& y) { return x*y; }
+    static inline T apply(const Domain::type& x) { return x.first*x.second; }
+
+    static consteval bool is_commutative(const T& x, const T& y) {
+         return apply(x,y) == apply(y,x);
+    }
+    static constexpr bool is_associative(const T& x, const T& y, const T& z) { 
+        return apply(x,apply(y,z)) == apply(apply(x,y),z); 
+    }
+
+    template <class Op>
+    static constexpr bool distributes_through(const T& x, const T& y, const T& z) {
+        return apply(z,Op::apply(x,y)) == Op::apply(apply(z,x), apply(z,y));
+    }
 };
 

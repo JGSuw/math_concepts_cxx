@@ -1,5 +1,6 @@
 #include <iostream>
 #include <exception>
+// #include "fields.hpp"
 #include "vectorspaces.hpp"
 
 using R = RealNumbers<double>;
@@ -16,6 +17,6 @@ int main(void) {
     is_pointset<Reals::Set>();
     is_pointset<V>();
     is_vectorspace<VecSp>();
-    are_dual<VecSp,VecSp>();
+    // are_dual<VecSp,VecSp>();
     return 0;
 }

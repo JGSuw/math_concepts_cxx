@@ -17,10 +17,10 @@ template <PointSet X, PointSet Y>
 class CartesianProduct{
     public:
     using type = std::pair<typename X::type, typename Y::type>;
-    static consteval bool contains(X::type& x, Y::type& y) {
+    static inline bool contains(X::type& x, Y::type& y) {
         return X::contains(x) && Y::contains(y);
     }
-    static consteval bool contains(type& pair) {
+    static inline bool contains(type& pair) {
         return contains(pair.first, pair.second);
     }
 };
@@ -31,7 +31,7 @@ class NaturalNumbers {
     using type = T;
     static constexpr T zero = static_cast<T>(0);
     static constexpr T one = static_cast<T>(1);
-    static consteval bool contains(T& x) {
+    static inline bool contains(T& x) {
         return x >= zero && x % one == zero;
     };
 };
@@ -42,7 +42,7 @@ class Integers {
     using type = T;
     static constexpr T zero = NaturalNumbers<T>::zero;
     static constexpr T one = NaturalNumbers<T>::one;
-    static consteval bool contains(T& x) {
+    static inline bool contains(T& x) {
         return x % one == zero;
     };
 };
@@ -51,7 +51,7 @@ template <typename T>
 class RationalNumbers {
     public:
     using type = std::pair<T,T>;
-    static consteval bool contains(T& x)  {
+    static inline bool contains(T& x)  {
         return (Integers<T>::contains(x.first) &&
                 Integers<T>::contains(x.second) &&
                 x.second != Integers<T>::zero);
@@ -64,7 +64,7 @@ class RealNumbers {
     using type = T;
     static constexpr T zero = NaturalNumbers<T>::zero;
     static constexpr T one = NaturalNumbers<T>::one;
-    static consteval bool contains(T& x) { 
+    static inline bool contains(T& x) { 
         return true;
     }
 };

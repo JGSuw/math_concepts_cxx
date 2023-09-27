@@ -6,8 +6,8 @@ template <class F>
 concept Field = 
         AbelianGroup<typename F::Set, typename F::Add> &&
         AbelianGroup<typename F::Set, typename F::Mul> &&
-requires(F::Add& addition) {
-    F::Mul::distributes_through(addition);
+requires(F::Set::type& x, F::Set::type& y, F::Set::type& z) {
+    F::Mul::distributes_through<F::Add>(x,y,z);
 };
 
 template <class F>

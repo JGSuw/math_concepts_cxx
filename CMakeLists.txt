@@ -1,6 +1,6 @@
 cmake_minimum_required(VERSION 3.10)
 
-project(concepts VERSION 1.0)
+project(math_concepts VERSION 1.0)
 
 # find_package (Eigen3 REQUIRED NO_MODULE)
 
@@ -18,5 +18,5 @@ set(srcs
 src/main.cc
 )
 
-add_executable(concepts ${hdrs} ${srcs})
-target_include_directories(concepts PUBLIC inc eigen-3.4.0)
+add_executable(math_concepts ${hdrs} ${srcs})
+target_include_directories(math_concepts PUBLIC inc eigen-3.4.0)
