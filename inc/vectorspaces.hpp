@@ -3,17 +3,18 @@
 #include <Eigen/Dense>
 
 
-template <class A>
+template <class VecSp>
 concept VectorSpace = 
-        Field<typename A::F> &&
-        AbelianGroup<typename A::V, typename A::Add> &&
+        Field<typename VecSp::F> &&
+        AbelianGroup<typename VecSp::V, typename VecSp::Add> &&
         MapsTo<
-            typename A::Mul,
-            CartesianProduct<typename A::F::Set, typename A::V>, 
-            typename A::V> &&
-requires (A::F::Set::type& a, A::F::Set::type& b, A::V::type& x, A::V::type& y) {
-    A::Mul::distributes_through(a,x,y);
-    A::Mul::distributes_through(a,b,x);
+            typename VecSp::Mul,
+            CartesianProduct<typename VecSp::F::Set, typename VecSp::V>, 
+            typename VecSp::V> &&
+requires (VecSp::F::Set::type& a, VecSp::F::Set::type& b, VecSp::V::type& x, VecSp::V::type& y) {
+    VecSp::Mul::unity_scalar_fixes_identity(x);
+    VecSp::Mul::distributes_through_vec_add(a,x,y);
+    VecSp::Mul::distributes_through_scalar_add(a,b,x);
 };
 
 template <class A>
@@ -56,23 +57,23 @@ class EuclideanSpace {
         using Target = V;
 
         static inline Vec identity() { return Vec::Zero(); }
-        static consteval bool has_identity(const Vec& x) { 
-            return apply(identity(), x) == x;
+        static void has_identity(const Vec& x) { 
+            static_assert(apply(identity(), x) == x);
         }
 
         static inline Vec inverse(const Vec& x) { return -x; }
-        static consteval bool has_inverse(const Vec& x) { 
-            return apply(inverse(x),x) == identity();
+        static void has_inverse(const Vec& x) { 
+            static_assert(apply(inverse(x),x) == identity());
         }
 
         static inline Vec apply(const Vec& x, const Vec& y) { return x + y; }
         static inline Vec apply(const Domain::type& x) { return apply(x.first, x.second); }
 
-        static consteval bool is_commutative(const Vec& x, const Vec& y) {
-            return apply(x,y) == apply(y,x);
+        static void is_commutative(const Vec& x, const Vec& y) {
+            static_assert(apply(x,y) == apply(y,x));
         }
-        static constexpr bool is_associative(const Vec& x, const Vec& y, const Vec& z) {
-            return apply(x,apply(y,z)) == apply(apply(x,y),z);
+        static void is_associative(const Vec& x, const Vec& y, const Vec& z) {
+            static_assert(apply(x,apply(y,z)) == apply(apply(x,y),z));
         }
     };
     class Mul {
@@ -82,13 +83,19 @@ class EuclideanSpace {
 
         static inline Vec apply(const Scalar& s, const Vec& v) { return s*v; }
         static inline Vec apply(const Domain::type& x) { return apply(x.first, x.second); }
-        
-        static constexpr bool distributes_through(const Scalar& a, const Vec& x, const Vec& y) {
-            return apply(a,Add::apply(x,y)) == Add::apply(apply(a,x),apply(a,y));
+
+        static void unity_scalar_fixes_identity(const Vec& x) {
+            static_assert(apply(F::Mul::identity(), x) == x)
         }
-        static constexpr bool distributes_through(const Scalar& a, const Scalar& b, const Vec& x) {
-            return apply(F::Add::apply(a,b), x) == apply(a,x) + apply(b,x);
+  
+        static void distributes_through_vec_add(const Scalar& a, const Vec& x, const Vec& y) {
+            static_assert(apply(a,Add::apply(x,y)) == Add::apply(apply(a,x),apply(a,y)));
         }
+
+        static void distributes_through_scalar_add(const Scalar& a, const Scalar& b, const Vec& x) {
+            static_assert(apply(F::Add::apply(a,b), x) == apply(a,x) + apply(b,x));
+        }
+
     };
     class Contraction {
         public:
